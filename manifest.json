@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "EcoSprout: Carbon Karma Companion",
+  "version": "1.0.0",
+  "description": "A lively carbon-footprint companion that nudges you toward greener choices while you shop, fly, and order food \u2014 no dashboard required.",
+  "permissions": ["storage", "alarms", "notifications"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "EcoSprout \u2014 your carbon companion",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.ca/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.in/*",
+        "https://*.walmart.com/*",
+        "https://*.ebay.com/*",
+        "https://*.etsy.com/*",
+        "https://*.target.com/*",
+        "https://*.bestbuy.com/*",
+        "https://*.flipkart.com/*",
+        "https://*.doordash.com/*",
+        "https://*.ubereats.com/*",
+        "https://*.grubhub.com/*",
+        "https://*.instacart.com/*",
+        "https://www.google.com/travel/flights*",
+        "https://*.kayak.com/*",
+        "https://*.expedia.com/*",
+        "https://*.skyscanner.net/*",
+        "https://*.skyscanner.com/*"
+      ],
+      "js": ["constants.js", "carbon-engine.js", "sprout-pet.js", "content.js"],
+      "css": ["content-styles.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

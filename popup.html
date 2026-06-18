@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoSprout</title>
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">🌱</span>
+      <span class="brand-name">EcoSprout</span>
+    </div>
+    <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Open settings">⚙</button>
+  </header>
+
+  <section class="terrarium" id="petStage" aria-label="Your Sprout">
+    <div class="terrarium-glow" id="petAura"></div>
+    <div class="terrarium-glass"></div>
+    <div class="pet-avatar" id="petAvatar">🌱</div>
+    <div class="terrarium-soil"></div>
+
+    <input id="sproutNameInput" class="sprout-name-input" placeholder="Name your Sprout" maxlength="18" autocomplete="off" />
+    <div class="pet-stage-label" id="petStageLabel">SPROUT</div>
+
+    <div class="vitality-row">
+      <span class="vitality-icon" aria-hidden="true">💧</span>
+      <div class="vitality-track"><div class="vitality-fill" id="vitalityFill"></div></div>
+      <span class="vitality-label" id="vitalityLabel">60%</span>
+    </div>
+  </section>
+
+  <section class="karma-section">
+    <div class="karma-score" id="karmaScore">0</div>
+    <div class="karma-label">Carbon Karma<span id="karmaDelta" class="karma-delta"></span></div>
+    <div class="streak-badge" id="streakBadge">🔥 0-day streak</div>
+  </section>
+
+  <section class="tip-card">
+    <div class="tip-text" id="tipText">Loading a tip…</div>
+    <button id="shuffleTip" class="icon-btn" title="Show another tip" aria-label="Show another tip">🎲</button>
+  </section>
+
+  <section class="badges-section">
+    <div class="section-title">Achievements</div>
+    <div class="badges-row" id="badgesRow"></div>
+  </section>
+
+  <section class="activity-section">
+    <div class="section-title">Recent Activity</div>
+    <div class="activity-list" id="activityList"></div>
+  </section>
+
+  <section id="settingsPanel" class="settings-panel hidden">
+    <div class="section-title">Settings</div>
+
+    <label class="toggle-row">
+      <span>🛍️ Shopping nudges</span>
+      <span class="switch"><input type="checkbox" id="toggleEcommerce" /><span class="switch-track"><span class="switch-thumb"></span></span></span>
+    </label>
+    <label class="toggle-row">
+      <span>✈️ Travel nudges</span>
+      <span class="switch"><input type="checkbox" id="toggleFlight" /><span class="switch-track"><span class="switch-thumb"></span></span></span>
+    </label>
+    <label class="toggle-row">
+      <span>🍔 Food nudges</span>
+      <span class="switch"><input type="checkbox" id="toggleFood" /><span class="switch-track"><span class="switch-thumb"></span></span></span>
+    </label>
+    <label class="toggle-row">
+      <span>🌱 Floating Sprout</span>
+      <span class="switch"><input type="checkbox" id="togglePet" /><span class="switch-track"><span class="switch-thumb"></span></span></span>
+    </label>
+
+    <button id="resetBtn" class="reset-btn" type="button">Reset my data</button>
+  </section>
+
+</div>
+
+<div id="confettiLayer" class="confetti-layer"></div>
+
+<script src="constants.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

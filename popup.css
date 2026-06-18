@@ -1,0 +1,197 @@
+/* ===========================================================================
+   EcoSprout — popup stylesheet
+   Design intent: this is the one surface fully under our control, so it's
+   the boldest. A dark "terrarium at dusk" palette (deep moss + warm
+   grow-light amber + soft chlorophyll mint) instead of a generic light
+   dashboard card. System font stack only — no external font/CDN calls, by
+   design, so the popup stays instant and CSP-clean.
+   =========================================================================== */
+
+:root {
+  --ink: #14241C;
+  --canopy: #1E3328;
+  --canopy-soft: #243E30;
+  --mist: #E7F1EA;
+  --mist-soft: #9FBBAC;
+  --amber: #F2A93B;
+  --amber-soft: rgba(242, 169, 59, 0.16);
+  --chlorophyll: #6EE7A8;
+  --chlorophyll-deep: #2FAE71;
+  --clay: #E8694A;
+  --line: rgba(231, 241, 234, 0.09);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 368px;
+  background: var(--ink);
+  color: var(--mist);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.app { padding: 16px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+
+/* ------------------------------- header ------------------------------- */
+
+.app-header { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-mark { font-size: 18px; }
+.brand-name { font-weight: 800; font-size: 14px; color: var(--mist); }
+.icon-btn {
+  border: none; background: var(--canopy); color: var(--mist);
+  width: 30px; height: 30px; border-radius: 9px; font-size: 14px; cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease;
+}
+.icon-btn:hover { background: var(--canopy-soft); transform: translateY(-1px); }
+
+/* --------------------- terrarium (the signature element) --------------------- */
+
+.terrarium {
+  position: relative;
+  background: radial-gradient(120% 100% at 50% 0%, var(--canopy) 0%, var(--ink) 78%);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 26px 16px 18px;
+  text-align: center;
+  overflow: hidden;
+}
+.terrarium-glow {
+  position: absolute;
+  top: -40px; left: 50%; transform: translateX(-50%);
+  width: 190px; height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--chlorophyll) 0%, transparent 68%);
+  opacity: 0.3;
+  filter: blur(2px);
+  animation: glow-pulse 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.20; transform: translateX(-50%) scale(0.92); }
+  50% { opacity: 0.40; transform: translateX(-50%) scale(1.04); }
+}
+.terrarium-glass {
+  position: absolute;
+  top: 14px; left: 50%; transform: translateX(-50%);
+  width: 132px; height: 66px;
+  border-radius: 132px 132px 0 0 / 66px 66px 0 0;
+  border: 1.5px solid rgba(231, 241, 234, 0.16);
+  border-bottom: none;
+  background: linear-gradient(180deg, rgba(231, 241, 234, 0.10), transparent 70%);
+  pointer-events: none;
+}
+.pet-avatar {
+  position: relative;
+  font-size: 50px;
+  margin-top: 18px;
+  animation: pet-bob 3.4s ease-in-out infinite;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+@keyframes pet-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(2deg); }
+}
+.terrarium-soil {
+  position: relative;
+  width: 78%; height: 7px; margin: 10px auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--chlorophyll-deep), var(--amber));
+  opacity: 0.55;
+}
+.sprout-name-input {
+  position: relative;
+  display: block; margin: 12px auto 2px; width: 75%; text-align: center;
+  border: none; background: transparent; color: var(--mist);
+  font-weight: 800; font-size: 14px;
+  border-bottom: 1px dashed transparent; padding-bottom: 2px;
+}
+.sprout-name-input:hover, .sprout-name-input:focus { border-bottom: 1px dashed var(--chlorophyll); outline: none; }
+.sprout-name-input::placeholder { color: var(--mist-soft); font-weight: 600; }
+.pet-stage-label {
+  position: relative; font-size: 10.5px; font-weight: 700; color: var(--amber);
+  letter-spacing: 0.16em; margin: 4px 0 14px;
+}
+.vitality-row { position: relative; display: flex; align-items: center; gap: 8px; }
+.vitality-icon { font-size: 12px; }
+.vitality-track { flex: 1; height: 7px; border-radius: 6px; background: rgba(231, 241, 234, 0.10); overflow: hidden; }
+.vitality-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--chlorophyll-deep), var(--chlorophyll)); transition: width 600ms ease; }
+.vitality-label { font-size: 10.5px; font-weight: 700; color: var(--mist-soft); width: 30px; text-align: right; }
+
+/* -------------------------------- karma -------------------------------- */
+
+.karma-section { text-align: center; padding: 2px 0; }
+.karma-score { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--mist); }
+.karma-label { font-size: 11px; font-weight: 700; color: var(--mist-soft); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+.karma-delta { color: var(--chlorophyll); margin-left: 6px; }
+.streak-badge {
+  display: inline-block; margin-top: 10px; padding: 5px 13px; border-radius: 999px;
+  background: var(--amber-soft); color: var(--amber); font-weight: 700; font-size: 11.5px;
+  border: 1px solid rgba(242, 169, 59, 0.25);
+}
+
+/* --------------------------------- tip --------------------------------- */
+
+.tip-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--canopy); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px;
+}
+.tip-text { font-size: 12.5px; line-height: 1.45; color: var(--mist); flex: 1; }
+
+.section-title { font-size: 11px; font-weight: 800; color: var(--mist-soft); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+
+/* -------------------------------- badges -------------------------------- */
+
+.badges-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.badge {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  background: var(--canopy); border: 1px solid var(--line);
+}
+.badge.unlocked { background: var(--amber-soft); border-color: rgba(242, 169, 59, 0.3); }
+.badge.locked { filter: grayscale(1); opacity: 0.35; }
+
+/* ------------------------------- activity ------------------------------- */
+
+.activity-list { display: flex; flex-direction: column; gap: 6px; }
+.activity-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--canopy); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 10px; font-size: 12px;
+}
+.activity-label { color: var(--mist); }
+.activity-time { color: var(--mist-soft); font-size: 10.5px; }
+.activity-empty { font-size: 12px; color: var(--mist-soft); text-align: center; padding: 14px 0; }
+
+/* ------------------------------- settings ------------------------------- */
+
+.settings-panel { display: flex; flex-direction: column; gap: 11px; }
+.settings-panel.hidden { display: none; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--mist); cursor: pointer; }
+
+.switch { position: relative; display: inline-block; width: 36px; height: 21px; flex-shrink: 0; }
+.switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1; margin: 0; }
+.switch-track { position: absolute; inset: 0; background: rgba(231, 241, 234, 0.14); border-radius: 999px; transition: background 200ms ease; }
+.switch-thumb { position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: var(--mist); transition: transform 200ms ease; }
+.switch input:checked ~ .switch-track { background: var(--chlorophyll-deep); }
+.switch input:checked ~ .switch-track .switch-thumb { transform: translateX(15px); }
+
+.reset-btn {
+  margin-top: 2px; border: 1px solid rgba(232, 105, 74, 0.3); background: rgba(232, 105, 74, 0.12); color: var(--clay);
+  font-weight: 700; font-size: 11.5px; border-radius: 10px; padding: 9px; cursor: pointer;
+  transition: background 160ms ease;
+}
+.reset-btn:hover { background: rgba(232, 105, 74, 0.2); }
+
+/* ------------------------------- confetti ------------------------------- */
+
+.confetti-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 999; }
+.confetti-piece { position: absolute; width: 6px; height: 10px; border-radius: 2px; animation: confetti-fly 900ms ease-out forwards; }
+@keyframes confetti-fly {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(540deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terrarium-glow, .pet-avatar, .vitality-fill, .confetti-piece { animation: none !important; }
+}

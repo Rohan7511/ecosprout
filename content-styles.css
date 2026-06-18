@@ -1,0 +1,170 @@
+/* ===========================================================================
+   EcoSprout — injected widget styles
+   These render INSIDE arbitrary host pages (Amazon, Kayak, DoorDash...), so
+   every rule is defensively scoped under .ecosprout-widget and several
+   layout-critical properties carry !important to survive aggressive host
+   page resets. z-index values sit near the top of the 32-bit range so our
+   UI never loses a stacking fight with the host page.
+   =========================================================================== */
+
+.ecosprout-widget,
+.ecosprout-widget * {
+  box-sizing: border-box !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  line-height: 1.4 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* ----------------------------- estimate cards ----------------------------- */
+
+.ecosprout-card {
+  position: relative;
+  margin: 14px 0;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f1fbf6, #e4f6ec);
+  border: 1px solid #c9ecda;
+  box-shadow: 0 6px 20px rgba(16, 90, 60, 0.10);
+  animation: ecosprout-rise 420ms ease-out;
+  max-width: 360px;
+  z-index: 2147483000;
+}
+
+/* Used as a fallback anchor when no in-page insertion point is found. */
+.ecosprout-card.ecosprout-floating {
+  position: fixed !important;
+  right: 20px;
+  bottom: 96px;
+}
+
+.ecosprout-sev-medium { border-color: #f6dca0; background: linear-gradient(135deg, #fffaf0, #fdf1d8); }
+.ecosprout-sev-high { border-color: #f3c3b6; background: linear-gradient(135deg, #fff4f1, #fde8e2); }
+/* ecosprout-sev-low intentionally has no override — the base gradient
+   already reads as "good news green". */
+
+.ecosprout-card-head { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px; margin-bottom: 8px; }
+.ecosprout-card-badge { font-size: 13px !important; font-weight: 700 !important; color: #1b5e3a !important; }
+.ecosprout-card-kg { font-size: 16px !important; font-weight: 800 !important; color: #0f3d2e !important; }
+
+.ecosprout-card-bar { height: 6px; border-radius: 4px; background: #d9efe1; overflow: hidden; margin: 6px 0 10px; }
+.ecosprout-card-bar-fill { height: 100%; background: linear-gradient(90deg, #6ee7a8, #2fae71); border-radius: 4px; transition: width 500ms ease; }
+
+.ecosprout-card-equiv { font-size: 12px !important; color: #4b6b5b !important; margin-bottom: 8px; }
+.ecosprout-card-suggestion { font-size: 13px !important; color: #234e3c !important; margin-bottom: 12px; }
+
+.ecosprout-card-cta {
+  width: 100%;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 9px 12px !important;
+  background: #1f6b45 !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: transform 150ms ease, background 150ms ease;
+}
+.ecosprout-card-cta:hover { background: #17532f !important; transform: translateY(-1px); }
+.ecosprout-card-cta:disabled { background: #8fd3ad !important; cursor: default !important; transform: none; }
+
+@keyframes ecosprout-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ------------------------------ Sprout bubble ------------------------------ */
+
+.ecosprout-bubble {
+  position: fixed !important;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d9fbe7, #6ee7a8);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 26px;
+  cursor: grab !important;
+  box-shadow: 0 8px 22px rgba(15, 61, 46, 0.30);
+  z-index: 2147483600;
+  animation: ecosprout-bob 3.2s ease-in-out infinite;
+  user-select: none !important;
+}
+.ecosprout-bubble:active { cursor: grabbing !important; }
+.ecosprout-bubble.ecosprout-low-vitality { animation: ecosprout-droop 3.2s ease-in-out infinite; filter: saturate(0.7); }
+
+.ecosprout-bubble-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--ecosprout-stage-color, rgba(110, 231, 168, 0.5));
+  opacity: 0.55;
+  animation: ecosprout-pulse-ring 2.4s ease-out infinite;
+}
+
+@keyframes ecosprout-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+@keyframes ecosprout-droop {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(2px) rotate(-2deg); }
+}
+@keyframes ecosprout-pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.ecosprout-speech {
+  position: fixed !important;
+  width: 200px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #1b3a2c;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  z-index: 2147483600;
+  transform: scale(0.85);
+  opacity: 0;
+  transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1), opacity 220ms ease;
+}
+.ecosprout-speech.ecosprout-pop { transform: scale(1); opacity: 1; }
+.ecosprout-speech::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  bottom: -8px;
+  border-width: 8px 8px 0 0;
+  border-style: solid;
+  border-color: #ffffff transparent transparent transparent;
+}
+
+.ecosprout-pet-panel {
+  position: fixed !important;
+  right: 86px;
+  bottom: 14px;
+  width: 220px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+  z-index: 2147483600;
+  animation: ecosprout-rise 220ms ease-out;
+}
+.ecosprout-panel-header { display: flex !important; align-items: center !important; gap: 10px; margin-bottom: 10px; }
+.ecosprout-panel-emoji { font-size: 28px; }
+.ecosprout-panel-title { font-weight: 800 !important; font-size: 14px !important; color: #15301f !important; }
+.ecosprout-panel-stage { font-size: 12px !important; color: #5c7b6a !important; }
+.ecosprout-vitality-track { height: 6px; border-radius: 4px; background: #e4f3ea; overflow: hidden; margin-bottom: 10px; }
+.ecosprout-vitality-fill { height: 100%; background: linear-gradient(90deg, #6ee7a8, #2fae71); }
+.ecosprout-panel-stats { display: flex !important; justify-content: space-between !important; font-size: 12px !important; font-weight: 700 !important; color: #1b5e3a !important; margin-bottom: 8px; }
+.ecosprout-panel-footer { font-size: 11px !important; color: #7a9486 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ecosprout-bubble, .ecosprout-bubble-ring, .ecosprout-card { animation: none !important; }
+}
