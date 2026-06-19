@@ -1,12 +1,3 @@
-// Test Cases:
-// 1. estimateProduct: Validate fallback generic emissions vs mapped category.
-// 2. estimateFlight: Verify direct flights return lower emissions than multi-stop.
-/**
- * EcoSprout — Carbon Engine
- * Pure, DOM-free heuristic estimation functions. Given structured inputs
- * (scraped by content.js), returns a CO2e estimate plus relatable
- * comparisons and a suggestion.
- **/
 const CarbonEngine = (function () {
 
   const REGEX_EXPRESS_SHIPPING = /same.?day|within \d+\s*hours?|get it today|tomorrow|next.?day|1 day|one day/i;

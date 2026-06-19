@@ -1,24 +1,7 @@
-// Test Cases:
-// 1. Verify ALARM_DAILY_CHECK triggers notification if streak at risk.
-// 2. Ensure KARMA_EVENT messages correctly update score and vitality.
-/**
- * EcoSprout — Background Service Worker
- * Deliberately holds NO long-lived in-memory state. MV3 service workers can
- * be killed and restarted at any time, so every handler reads the latest
- * state from chrome.storage.local, mutates a local copy, and writes it
- * straight back. This is the correct MV3 pattern — porting an MV2
- * background-page habit of caching state in module-level variables is a
- * common source of "it works until the worker naps" bugs.
- */
 importScripts('constants.js');
 
-// --- Constants ---
-const ALARM_DAILY_CHECK = 'ecosprout-daily-check';
-const REMINDER_HOUR = 18; // 6 PM
-const MINUTES_IN_A_DAY = 1440;
 const ONE_DAY_MS = 86400000;
 const MAX_HISTORY_ITEMS = 50;
-
 const MIN_VITALITY = 20;
 const MAX_VITALITY = 100;
 
@@ -30,10 +13,8 @@ const DEFAULT_STATE = Object.freeze({
   history: [],
   achievements: [],
   sproutName: null,
-  settings: Object.freeze({ ecommerce: true, flight: true, food: true, petBubble: true })
+  settings: ECOSPROUT_DEFAULT_SETTINGS
 });
-
-// --- Utilities ---
 
 function todayString() {
   return new Date().toISOString().slice(0, 10);
@@ -43,23 +24,9 @@ function getYesterdayString() {
   return new Date(Date.now() - ONE_DAY_MS).toISOString().slice(0, 10);
 }
 
-function minutesUntilHour(targetHour) {
-  const now = new Date();
-  const next = new Date(now);
-  next.setHours(targetHour, 0, 0, 0);
-
-  if (next <= now) {
-    next.setDate(next.getDate() + 1);
-  }
-
-  return Math.max(1, Math.round((next - now) / 60000));
-}
-
 function clampVitality(v) {
   return Math.max(MIN_VITALITY, Math.min(MAX_VITALITY, v));
 }
-
-// --- State Management ---
 
 function applyStreak(state) {
   const today = todayString();
@@ -146,31 +113,13 @@ function handleLogEvent(state, message) {
   }
 }
 
-function scheduleDailyCheck() {
-  chrome.alarms.create(ALARM_DAILY_CHECK, {
-    delayInMinutes: minutesUntilHour(REMINDER_HOUR),
-    periodInMinutes: MINUTES_IN_A_DAY
-  });
-}
-
-// --- Event Listeners ---
-
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get(null, (existing) => {
     chrome.storage.local.set({ ...DEFAULT_STATE, ...existing });
   });
-  scheduleDailyCheck();
 });
 
-chrome.runtime.onStartup.addListener(() => {
-  chrome.alarms.get(ALARM_DAILY_CHECK, (alarm) => {
-    if (!alarm) {
-      scheduleDailyCheck();
-    }
-  });
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'KARMA_EVENT') {
     withState((state, save) => {
       handleKarmaEvent(state, message);
@@ -188,19 +137,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   return false;
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name !== ALARM_DAILY_CHECK) return;
-
-  withState((state) => {
-    if (state.lastActiveDate === todayString()) return;
-
-    chrome.notifications.create('ecosprout-reminder', {
-      type: 'basic',
-      iconUrl: chrome.runtime.getURL('icons/icon128.png'),
-      title: `${state.sproutName || 'Your Sprout'} misses you! 🌱`,
-      message: 'A few mindful picks today could grow your Carbon Karma. Come say hi!'
-    });
-  });
 });

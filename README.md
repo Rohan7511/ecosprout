@@ -1,4 +1,3 @@
-<!-- Test Cases: None required. Documentation. -->
 # EcoSprout: Carbon Karma Companion 🌱
 
 A browser extension that turns carbon awareness into something you *feel* while you shop, fly, and order food — not something you have to remember to check. No dashboard, no separate app: a small companion (your "Sprout") lives in your toolbar and reacts in real time, right inside the pages you're already on.
@@ -45,8 +44,6 @@ If a card doesn't appear, open DevTools (`F12`) → Console and look for `[EcoSp
 ## Permissions, explained
 
 - `storage` — saves your Karma, streak, and settings locally.
-- `alarms` — schedules the once-daily "come say hi" check (fires once around 6pm if you haven't visited that day).
-- `notifications` — shows that reminder as an OS notification.
 - **No `host_permissions`.** The content script declares its own `matches` in `manifest.json`, which is sufficient for injection — no background fetch or cross-origin access is ever made, so there's nothing extra to request.
 
 ---
@@ -54,7 +51,7 @@ If a card doesn't appear, open DevTools (`F12`) → Console and look for `[EcoSp
 ## Troubleshooting
 
 - **Nothing shows up on a supported site** → Open DevTools Console, look for `[EcoSprout] detection skipped this pass` — that means a selector threw and was safely swallowed; the message tells you it's non-fatal. If you see nothing at all, confirm the extension is enabled and the URL matches one of the patterns in `manifest.json`.
-- **Background features (badge, daily reminder) seem stuck** → go to `chrome://extensions`, find EcoSprout, click "service worker" under "Inspect views" to open its dedicated console.
+- **Background features (badge/state updates) seem stuck** → go to `chrome://extensions`, find EcoSprout, click "service worker" under "Inspect views" to open its dedicated console.
 - **Popup looks empty on first install** → give it a second; `chrome.storage` writes from `onInstalled` and the first page visit happen asynchronously.
 - **Want a clean slate** → open the popup → ⚙ Settings → "Reset my data" (tap twice to confirm).
 

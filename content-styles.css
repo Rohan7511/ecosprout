@@ -1,13 +1,3 @@
-/* Test Cases: None required. Styles only. */
-/* ===========================================================================
-   EcoSprout — injected widget styles
-   These render INSIDE arbitrary host pages (Amazon, Kayak, DoorDash...), so
-   every rule is defensively scoped under .ecosprout-widget and several
-   layout-critical properties carry !important to survive aggressive host
-   page resets. z-index values sit near the top of the 32-bit range so our
-   UI never loses a stacking fight with the host page.
-   =========================================================================== */
-
 .ecosprout-widget,
 .ecosprout-widget * {
   box-sizing: border-box !important;

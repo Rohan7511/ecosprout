@@ -1,17 +1,3 @@
-// Test Cases:
-// 1. Verify scraping extracts title, price, and shipping speed from Amazon DOM.
-// 2. Ensure SPA history navigation re-triggers the detection logic.
-/**
- * EcoSprout — Content Script
- * Detects e-commerce, flight, and food-delivery pages, scrapes lightweight
- * signals from the DOM, asks CarbonEngine for an estimate, and injects a
- * small, native-feeling card. Also boots the floating Sprout companion.
- *
- * Defensive by design: every detector fails soft (returns / no-ops) rather
- * than throwing, because we don't control the host page's markup and it
- * WILL change over time. See SITE_HANDLERS-style selector objects below —
- * they're intentionally easy to find and extend.
- */
 (function () {
   'use strict';
   if (window.__ecoSproutContentInjected) return;
@@ -54,7 +40,7 @@
   const SITE_TYPE = detectSiteType();
   if (!SITE_TYPE) return;
 
-  let settings = { ecommerce: true, flight: true, food: true, petBubble: true };
+  let settings = ECOSPROUT_DEFAULT_SETTINGS;
 
   // --- Utilities ---
 
@@ -399,7 +385,7 @@
   }
 
   chrome.storage.local.get('settings', (data) => {
-    settings = { ecommerce: true, flight: true, food: true, petBubble: true, ...(data.settings || {}) };
+    settings = { ...ECOSPROUT_DEFAULT_SETTINGS, ...(data.settings || {}) };
 
     if (settings.petBubble) SproutPet.init();
     runDetection();
@@ -428,7 +414,7 @@
 
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local' || !changes.settings) return;
-      settings = { ecommerce: true, flight: true, food: true, petBubble: true, ...changes.settings.newValue };
+      settings = { ...ECOSPROUT_DEFAULT_SETTINGS, ...changes.settings.newValue };
       if (!settings.petBubble) SproutPet.destroy();
       else if (!document.getElementById('ecosprout-bubble')) SproutPet.init();
     });

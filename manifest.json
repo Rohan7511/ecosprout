@@ -3,7 +3,7 @@
   "name": "EcoSprout: Carbon Karma Companion",
   "version": "1.0.0",
   "description": "A lively carbon-footprint companion that nudges you toward greener choices while you shop, fly, and order food \u2014 no dashboard required.",
-  "permissions": ["storage", "alarms", "notifications"],
+  "permissions": ["storage"],
   "background": {
     "service_worker": "background.js"
   },
@@ -46,9 +46,7 @@
         "https://*.skyscanner.com/*"
       ],
       "js": ["constants.js", "carbon-engine.js", "sprout-pet.js", "content.js"],
-      "css": ["content-styles.css"],
-      "run_at": "document_idle",
-      "all_frames": false
+      "css": ["content-styles.css"]
     }
   ]
 }

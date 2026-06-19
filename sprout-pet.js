@@ -1,22 +1,3 @@
-// Test Cases:
-// 1. Dragging the Sprout pet respects DRAG_TOLERANCE_PX before moving.
-// 2. SproutPet.react() displays speech bubble for correct duration.
-/**
- * EcoSprout — Sprout Pet (the "wildcard" feature)
- * A small, draggable, floating companion that lives directly on the host
- * page. It doesn't just decorate — it reacts in real time to whatever
- * content.js detects (a heavy product, a connecting flight, a meat-heavy
- * cart) via SproutPet.react(text).
- *
- * Two intentionally separate axes, by design:
- *  - STAGE (seed → sprout → sapling → tree → oak) is driven by lifetime
- *    Karma and only ever grows. It's the "achievement" axis — no loss
- *    aversion, no punishing a long-term relationship over one bad day.
- *  - VITALITY (0–100) is a short-term mood gauge that drifts with recent
- *    activity but is floor-clamped (see background.js) so the Sprout can
- *    look a little thirsty, never distressing. This is meant to be a
- *    cute nudge, not a guilt mechanic.
- */
 (function () {
   if (window.__ecoSproutPetInjected) return;
   window.__ecoSproutPetInjected = true;
@@ -47,11 +28,7 @@
 
   // --- Utilities ---
   function getStageFor(karma) {
-    let current = ECOSPROUT_STAGES[0];
-    for (const s of ECOSPROUT_STAGES) {
-      if (karma >= s.minKarma) current = s;
-    }
-    return current;
+    return ECOSPROUT_STAGES.findLast((s) => karma >= s.minKarma) || ECOSPROUT_STAGES[0];
   }
 
   function escapeHtml(unsafe) {

@@ -1,15 +1,4 @@
-// Test Cases: None required. Constants only.
-/**
- * EcoSprout — Shared Constants
- * Loaded by the content scripts, the popup, and the background service
- * worker. Centralizing this here means tuning the game economy or copy
- * never requires touching any logic files.
- *
- * Works in three different global contexts:
- *  - content script (window)
- *  - popup page (window)
- *  - service worker (self, via importScripts)
- */
+const ECOSPROUT_DEFAULT_SETTINGS = Object.freeze({ ecommerce: true, flight: true, food: true, petBubble: true });
 
 const ECOSPROUT_STAGES = [
   { id: 'seed', label: 'Seed', minKarma: 0, emoji: '🌰', color: '#A47551' },
@@ -45,17 +34,18 @@ const ECOSPROUT_TIPS = [
 
 const ECOSPROUT_REFERENCE = {
   KG_PER_MILE_DRIVEN: 0.404, // ~average passenger car, EPA-style figure
-  KG_PER_PHONE_CHARGE: 0.0084, // ~one full smartphone charge
-  KG_PER_TREE_DAY: 0.0575 // a mature tree absorbs ~21kg CO2/year
+  KG_PER_PHONE_CHARGE: 0.0084 // ~one full smartphone charge
 };
 
 if (typeof window !== 'undefined') {
+  window.ECOSPROUT_DEFAULT_SETTINGS = ECOSPROUT_DEFAULT_SETTINGS;
   window.ECOSPROUT_STAGES = ECOSPROUT_STAGES;
   window.ECOSPROUT_ACHIEVEMENTS = ECOSPROUT_ACHIEVEMENTS;
   window.ECOSPROUT_TIPS = ECOSPROUT_TIPS;
   window.ECOSPROUT_REFERENCE = ECOSPROUT_REFERENCE;
 }
 if (typeof self !== 'undefined') {
+  self.ECOSPROUT_DEFAULT_SETTINGS = ECOSPROUT_DEFAULT_SETTINGS;
   self.ECOSPROUT_STAGES = ECOSPROUT_STAGES;
   self.ECOSPROUT_ACHIEVEMENTS = ECOSPROUT_ACHIEVEMENTS;
   self.ECOSPROUT_TIPS = ECOSPROUT_TIPS;

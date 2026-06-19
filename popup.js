@@ -1,24 +1,8 @@
-// Test Cases:
-// 1. Verify vitality bar percentage maps correctly to the current state.
-// 2. Test "Reset my data" double-click functionality clears storage.
-/**
- * EcoSprout — Popup Script
- * Renders the "lively" home base: the Sprout terrarium, an animated Karma
- * counter, streak, rotating tips, achievement badges, and recent activity.
- *
- * Note: native confirm()/alert() dialogs are unreliable inside Chrome
- * extension popups (the popup can lose focus and close mid-dialog), so the
- * reset control below uses a "tap again to confirm" pattern instead.
- */
-
 // --- Constants ---
 const MS_PER_MINUTE = 60000;
 const MINUTES_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;
 const ONE_DAY_MS = 86400000;
-const CONFETTI_COLORS = Object.freeze(['#6EE7A8', '#F2A93B', '#2FAE71', '#E7F1EA']);
-const CONFETTI_COUNT = 24;
-const CONFETTI_DURATION_MS = 1200;
 const MAX_ACTIVITY_ITEMS = 8;
 const RESET_CONFIRM_MS = 3000;
 const DEBOUNCE_NAME_MS = 400;
@@ -32,7 +16,7 @@ const POPUP_DEFAULTS = Object.freeze({
   history: [],
   achievements: [],
   sproutName: '',
-  settings: Object.freeze({ ecommerce: true, flight: true, food: true, petBubble: true })
+  settings: ECOSPROUT_DEFAULT_SETTINGS
 });
 
 const ACTIVITY_LABELS = Object.freeze({
@@ -62,7 +46,6 @@ const els = {
   settingsPanel: document.getElementById('settingsPanel'),
   sproutNameInput: document.getElementById('sproutNameInput'),
   resetBtn: document.getElementById('resetBtn'),
-  confettiLayer: document.getElementById('confettiLayer'),
   toggleEcommerce: document.getElementById('toggleEcommerce'),
   toggleFlight: document.getElementById('toggleFlight'),
   toggleFood: document.getElementById('toggleFood'),
@@ -71,11 +54,7 @@ const els = {
 
 // --- Utilities ---
 function getStageFor(karma) {
-  let current = ECOSPROUT_STAGES[0];
-  for (const s of ECOSPROUT_STAGES) {
-    if (karma >= s.minKarma) current = s;
-  }
-  return current;
+  return ECOSPROUT_STAGES.findLast((s) => karma >= s.minKarma) || ECOSPROUT_STAGES[0];
 }
 
 function animateCount(el, from, to, durationMs = 700) {
@@ -109,26 +88,6 @@ function streakIsAtRisk(state) {
   return state.lastActiveDate !== today && state.lastActiveDate !== yesterday;
 }
 
-// --- Visual Effects ---
-function burstConfetti(container) {
-  for (let i = 0; i < CONFETTI_COUNT; i++) {
-    const piece = document.createElement('span');
-    piece.className = 'confetti-piece';
-    piece.style.left = '50%';
-    piece.style.top = '34%';
-    piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
-    
-    const angle = Math.random() * Math.PI * 2;
-    const distance = 60 + Math.random() * 90;
-    piece.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
-    piece.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-    piece.style.animationDelay = `${Math.random() * 80}ms`;
-    
-    container.appendChild(piece);
-    setTimeout(() => piece.remove(), CONFETTI_DURATION_MS);
-  }
-}
-
 // --- Render Logic ---
 function renderPet(state) {
   const stage = getStageFor(state.karmaScore);
@@ -151,12 +110,7 @@ function renderStats(state, lastSeenScore) {
   animateCount(els.karmaScore, lastSeenScore, state.karmaScore);
   
   const delta = state.karmaScore - lastSeenScore;
-  if (delta > 0) {
-    els.karmaDelta.textContent = `+${delta}`;
-    burstConfetti(els.confettiLayer);
-  } else {
-    els.karmaDelta.textContent = '';
-  }
+  els.karmaDelta.textContent = delta > 0 ? `+${delta}` : '';
 
   els.streakBadge.textContent = streakIsAtRisk(state) ? '💤 streak paused' : `🔥 ${state.streak}-day streak`;
 
