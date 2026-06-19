@@ -1,3 +1,4 @@
+<!-- Test Cases: None required. Documentation. -->
 # EcoSprout: Carbon Karma Companion 🌱
 
 A browser extension that turns carbon awareness into something you *feel* while you shop, fly, and order food — not something you have to remember to check. No dashboard, no separate app: a small companion (your "Sprout") lives in your toolbar and reacts in real time, right inside the pages you're already on.

@@ -1,3 +1,6 @@
+// Test Cases:
+// 1. Verify ALARM_DAILY_CHECK triggers notification if streak at risk.
+// 2. Ensure KARMA_EVENT messages correctly update score and vitality.
 /**
  * EcoSprout — Background Service Worker
  * Deliberately holds NO long-lived in-memory state. MV3 service workers can

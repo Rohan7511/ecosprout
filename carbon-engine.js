@@ -1,3 +1,6 @@
+// Test Cases:
+// 1. estimateProduct: Validate fallback generic emissions vs mapped category.
+// 2. estimateFlight: Verify direct flights return lower emissions than multi-stop.
 /**
  * EcoSprout — Carbon Engine
  * Pure, DOM-free heuristic estimation functions. Given structured inputs

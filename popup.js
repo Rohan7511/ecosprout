@@ -1,3 +1,6 @@
+// Test Cases:
+// 1. Verify vitality bar percentage maps correctly to the current state.
+// 2. Test "Reset my data" double-click functionality clears storage.
 /**
  * EcoSprout — Popup Script
  * Renders the "lively" home base: the Sprout terrarium, an animated Karma

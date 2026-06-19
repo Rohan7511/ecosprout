@@ -1,3 +1,4 @@
+// Test Cases: None required. Constants only.
 /**
  * EcoSprout — Shared Constants
  * Loaded by the content scripts, the popup, and the background service

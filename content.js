@@ -1,3 +1,6 @@
+// Test Cases:
+// 1. Verify scraping extracts title, price, and shipping speed from Amazon DOM.
+// 2. Ensure SPA history navigation re-triggers the detection logic.
 /**
  * EcoSprout — Content Script
  * Detects e-commerce, flight, and food-delivery pages, scrapes lightweight

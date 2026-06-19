@@ -1,3 +1,6 @@
+// Test Cases:
+// 1. Dragging the Sprout pet respects DRAG_TOLERANCE_PX before moving.
+// 2. SproutPet.react() displays speech bubble for correct duration.
 /**
  * EcoSprout — Sprout Pet (the "wildcard" feature)
  * A small, draggable, floating companion that lives directly on the host

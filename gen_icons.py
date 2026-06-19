@@ -1,3 +1,4 @@
+# Test Cases: None required. Static icon generation script.
 """
 EcoSprout icon generator — produces icons/icon16.png, icon48.png, icon128.png.
 Pure PIL, no external assets, so it's fully reproducible. Re-run any time
