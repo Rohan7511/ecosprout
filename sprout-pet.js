@@ -18,20 +18,46 @@
   if (window.__ecoSproutPetInjected) return;
   window.__ecoSproutPetInjected = true;
 
+  // --- Constants ---
+  const DRAG_TOLERANCE_PX = 5;
+  const SPEECH_OFFSET_X = 210;
+  const SPEECH_OFFSET_Y = 6;
+  const SPEECH_MIN_MARGIN = 12;
+  const SPEECH_DISPLAY_TIME_MS = 4200;
+  const LOW_VITALITY_THRESHOLD = 35;
+  
+  // --- DOM Elements ---
   let bubbleEl = null;
   let speechEl = null;
   let panelEl = null;
   let speechTimer = null;
+  
+  // --- State ---
   let dragInfo = { active: false, dragging: false };
+  let state = { 
+    karma: 0, 
+    vitality: 60, 
+    streak: 0, 
+    sproutName: '', 
+    stage: ECOSPROUT_STAGES[0] 
+  };
 
-  let state = { karma: 0, vitality: 60, streak: 0, sproutName: '', stage: ECOSPROUT_STAGES[0] };
-
+  // --- Utilities ---
   function getStageFor(karma) {
     let current = ECOSPROUT_STAGES[0];
-    for (const s of ECOSPROUT_STAGES) if (karma >= s.minKarma) current = s;
+    for (const s of ECOSPROUT_STAGES) {
+      if (karma >= s.minKarma) current = s;
+    }
     return current;
   }
 
+  function escapeHtml(unsafe) {
+    return (unsafe || '').replace(/[&<"'>]/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+  }
+
+  // --- UI Construction ---
   function buildBubble() {
     bubbleEl = document.createElement('div');
     bubbleEl.id = 'ecosprout-bubble';
@@ -54,6 +80,7 @@
     document.addEventListener('mouseup', onDragEnd);
   }
 
+  // --- Event Handlers ---
   function onDragStart(e) {
     const rect = bubbleEl.getBoundingClientRect();
     dragInfo = {
@@ -68,35 +95,45 @@
 
   function onDragMove(e) {
     if (!dragInfo.active) return;
+    
     if (!dragInfo.dragging) {
       const moved = Math.abs(e.clientX - dragInfo.startX) + Math.abs(e.clientY - dragInfo.startY);
-      if (moved > 5) dragInfo.dragging = true;
+      if (moved > DRAG_TOLERANCE_PX) {
+        dragInfo.dragging = true;
+      }
     }
+    
     if (!dragInfo.dragging) return;
+    
     bubbleEl.style.right = 'auto';
     bubbleEl.style.bottom = 'auto';
     bubbleEl.style.left = `${e.clientX - dragInfo.offsetX}px`;
     bubbleEl.style.top = `${e.clientY - dragInfo.offsetY}px`;
   }
 
-  function onDragEnd() { dragInfo.active = false; }
+  function onDragEnd() { 
+    dragInfo.active = false; 
+  }
 
   function onBubbleClick() {
-    if (dragInfo.dragging) { dragInfo.dragging = false; return; }
+    if (dragInfo.dragging) { 
+      dragInfo.dragging = false; 
+      return; 
+    }
+    
     const isOpen = panelEl.style.display !== 'none';
     panelEl.style.display = isOpen ? 'none' : 'block';
-    if (!isOpen) renderPanel();
+    
+    if (!isOpen) {
+      renderPanel();
+    }
   }
 
-  function escapeHtml(unsafe) {
-    return (unsafe || '').replace(/[&<"'>]/g, function (m) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-    });
-  }
-
+  // --- Rendering & Visuals ---
   function renderPanel() {
     const pct = Math.max(4, Math.min(100, state.vitality));
     const safeName = escapeHtml(state.sproutName) || 'Your Sprout';
+    
     panelEl.innerHTML = `
       <div class="ecosprout-panel-header">
         <span class="ecosprout-panel-emoji">${state.stage.emoji}</span>
@@ -111,30 +148,35 @@
     `;
   }
 
-  function showSpeech(text, ms) {
+  function positionSpeech() {
+    const rect = bubbleEl.getBoundingClientRect();
+    speechEl.style.left = `${Math.max(SPEECH_MIN_MARGIN, rect.left - SPEECH_OFFSET_X)}px`;
+    speechEl.style.top = `${Math.max(SPEECH_MIN_MARGIN, rect.top - SPEECH_OFFSET_Y)}px`;
+  }
+
+  function showSpeech(text, durationMs = SPEECH_DISPLAY_TIME_MS) {
     if (!speechEl) return;
+    
     speechEl.textContent = text;
     speechEl.style.display = 'block';
     positionSpeech();
+    
     speechEl.classList.remove('ecosprout-pop');
     requestAnimationFrame(() => speechEl.classList.add('ecosprout-pop'));
+    
     clearTimeout(speechTimer);
-    speechTimer = setTimeout(() => { speechEl.style.display = 'none'; }, ms || 4200);
-  }
-
-  function positionSpeech() {
-    const rect = bubbleEl.getBoundingClientRect();
-    speechEl.style.left = `${Math.max(12, rect.left - 210)}px`;
-    speechEl.style.top = `${Math.max(12, rect.top - 6)}px`;
+    speechTimer = setTimeout(() => { speechEl.style.display = 'none'; }, durationMs);
   }
 
   function applyMood() {
     if (!bubbleEl) return;
+    
     bubbleEl.querySelector('.ecosprout-bubble-emoji').textContent = state.stage.emoji;
     bubbleEl.style.setProperty('--ecosprout-stage-color', state.stage.color);
-    bubbleEl.classList.toggle('ecosprout-low-vitality', state.vitality < 35);
+    bubbleEl.classList.toggle('ecosprout-low-vitality', state.vitality < LOW_VITALITY_THRESHOLD);
   }
 
+  // --- State Synchronization ---
   function refreshState() {
     chrome.storage.local.get(['karmaScore', 'vitality', 'streak', 'sproutName'], (data) => {
       state.karma = data.karmaScore || 0;
@@ -142,10 +184,12 @@
       state.streak = data.streak || 0;
       state.sproutName = data.sproutName || '';
       state.stage = getStageFor(state.karma);
+      
       applyMood();
     });
   }
 
+  // --- Public API ---
   window.SproutPet = {
     init() {
       if (bubbleEl) return;
@@ -154,13 +198,16 @@
     },
     destroy() {
       [bubbleEl, speechEl, panelEl].forEach((el) => el && el.remove());
-      bubbleEl = speechEl = panelEl = null;
+      bubbleEl = null;
+      speechEl = null;
+      panelEl = null;
     },
     react(text) {
       if (bubbleEl) showSpeech(text);
     }
   };
 
+  // --- Listeners ---
   if (chrome.storage && chrome.storage.onChanged) {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area === 'local' && (changes.karmaScore || changes.vitality || changes.streak || changes.sproutName)) {

@@ -14,10 +14,31 @@
   if (window.__ecoSproutContentInjected) return;
   window.__ecoSproutContentInjected = true;
 
-  const host = location.hostname;
+  // --- Constants ---
+  const SPA_RELOAD_DELAY_MS = 500;
+  const ROUTING_DELAY_MS = 700;
+  const MAX_FLIGHT_TEXT_LENGTH = 20000;
+  const FOOD_CART_MAX_ITEMS = 25;
+  const LBS_TO_KG = 0.453592;
+  const OZ_TO_KG = 0.0283495;
+
   const ECOMMERCE_HOSTS = ['amazon.', 'walmart.com', 'ebay.com', 'etsy.com', 'target.com', 'bestbuy.com', 'flipkart.com'];
   const FOOD_HOSTS = ['doordash.com', 'ubereats.com', 'grubhub.com', 'instacart.com'];
   const FLIGHT_HOSTS = ['kayak.com', 'expedia.com', 'skyscanner.'];
+
+  const REGEX_WEIGHT = /(?:item weight|weight|shipping weight)[^0-9]*?(\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?|lbs?|pounds?|oz|ounces?)/i;
+  const COMMON_MATERIALS = ['steel', 'aluminum', 'aluminium', 'plastic', 'cotton', 'wood', 'glass', 'leather', 'polyester', 'nylon', 'cardboard', 'paper', 'ceramic'];
+
+  const AMAZON_SELECTORS = Object.freeze({
+    title: ['#productTitle'],
+    price: ['.a-price .a-offscreen', '#priceblock_ourprice', '#priceblock_dealprice', '.a-price-whole'],
+    breadcrumb: ['#wayfinding-breadcrumbs_feature_div'],
+    shipping: ['#mir-layout-DELIVERY_BLOCK', '#deliveryBlockMessage', '#delivery-block'],
+    anchor: ['#desktop_buybox', '#buybox', '#rightCol', '#ppd'],
+    details: ['#productDetails_techSpec_section_1', '#prodDetails', '#detailBullets_feature_div', '#technicalSpecifications_section_1']
+  });
+
+  const host = location.hostname;
 
   function detectSiteType() {
     if (FOOD_HOSTS.some((h) => host.includes(h))) return 'food';
@@ -32,39 +53,59 @@
 
   let settings = { ecommerce: true, flight: true, food: true, petBubble: true };
 
-  function sendKarmaEvent(points, reason, meta) {
-    try { chrome.runtime.sendMessage({ type: 'KARMA_EVENT', points, reason, meta, at: Date.now() }); }
-    catch (e) { /* extension context can be invalidated on reload/update — safe to ignore */ }
+  // --- Utilities ---
+
+  function safeSendMessage(payload) {
+    try {
+      chrome.runtime.sendMessage({ ...payload, at: Date.now() });
+    } catch (e) {
+    }
   }
+
+  function sendKarmaEvent(points, reason, meta) {
+    safeSendMessage({ type: 'KARMA_EVENT', points, reason, meta });
+  }
+
   function sendLogEvent(meta) {
-    try { chrome.runtime.sendMessage({ type: 'LOG_EVENT', meta, at: Date.now() }); }
-    catch (e) { /* see above */ }
+    safeSendMessage({ type: 'LOG_EVENT', meta });
+  }
+
+  function createCard(id, extraClass = '') {
+    const card = document.createElement('div');
+    card.id = id;
+    card.className = `ecosprout-widget ecosprout-card ${extraClass}`.trim();
+    return card;
+  }
+
+  function debounce(fn, wait) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
   }
 
   /* ----------------------- shared product extraction ----------------------- */
 
-  // Layered fallback strategy: standardized structured data first (works
-  // across most modern e-commerce platforms), then OpenGraph meta tags,
-  // then Amazon's long-stable element IDs as a final, specific boost.
   function readJsonLdProduct() {
     const scripts = document.querySelectorAll('script[type="application/ld+json"]');
     for (const s of scripts) {
       try {
         const parsed = JSON.parse(s.textContent);
         const list = Array.isArray(parsed) ? parsed : [parsed];
+
         for (const item of list) {
           const graphNode = item['@graph'] && item['@graph'].find((g) => g['@type'] === 'Product');
           const node = graphNode || (item['@type'] === 'Product' ? item : null);
-          if (node) {
-            const offer = Array.isArray(node.offers) ? node.offers[0] : node.offers;
-            return {
-              title: node.name || '',
-              priceText: offer && offer.price ? String(offer.price) : '',
-              breadcrumb: node.category || ''
-            };
-          }
+
+          if (!node) continue;
+
+          const offer = Array.isArray(node.offers) ? node.offers[0] : node.offers;
+          return {
+            title: node.name || '',
+            priceText: offer && offer.price ? String(offer.price) : '',
+            breadcrumb: node.category || ''
+          };
         }
-      } catch (e) { /* not every ld+json block is a clean Product — expected, skip it */ }
+      } catch (e) {
+      }
     }
     return null;
   }
@@ -73,18 +114,15 @@
     const title = document.querySelector('meta[property="og:title"]');
     const priceEl = document.querySelector('meta[property="product:price:amount"]')
       || document.querySelector('meta[property="og:price:amount"]');
-    if (!title && !priceEl) return null;
-    return { title: title ? title.content : document.title, priceText: priceEl ? priceEl.content : '', breadcrumb: '' };
-  }
 
-  const AMAZON_SELECTORS = {
-    title: ['#productTitle'],
-    price: ['.a-price .a-offscreen', '#priceblock_ourprice', '#priceblock_dealprice', '.a-price-whole'],
-    breadcrumb: ['#wayfinding-breadcrumbs_feature_div'],
-    shipping: ['#mir-layout-DELIVERY_BLOCK', '#deliveryBlockMessage', '#delivery-block'],
-    anchor: ['#desktop_buybox', '#buybox', '#rightCol', '#ppd'],
-    details: ['#productDetails_techSpec_section_1', '#prodDetails', '#detailBullets_feature_div', '#technicalSpecifications_section_1']
-  };
+    if (!title && !priceEl) return null;
+
+    return {
+      title: title ? title.content : document.title,
+      priceText: priceEl ? priceEl.content : '',
+      breadcrumb: ''
+    };
+  }
 
   function queryFirstText(selectors) {
     for (const sel of selectors) {
@@ -102,34 +140,34 @@
     return null;
   }
 
+  function parseWeightString(val, unit) {
+    if (unit.startsWith('kg') || unit.startsWith('kilo')) return val;
+    if (unit.startsWith('g')) return val / 1000;
+    if (unit.startsWith('lb') || unit.startsWith('pound')) return val * LBS_TO_KG;
+    if (unit.startsWith('oz') || unit.startsWith('ounce')) return val * OZ_TO_KG;
+    return null;
+  }
+
   function extractTechDetails() {
     let detailsText = '';
     for (const sel of AMAZON_SELECTORS.details) {
       const el = document.querySelector(sel);
       if (el) detailsText += ' ' + el.textContent.toLowerCase();
     }
-    
+
     if (!detailsText) {
       const scope = document.querySelector('#ppd') || document.body;
       detailsText = scope.textContent.toLowerCase();
     }
 
     let weightKg = null;
-    let materials = [];
-
-    const weightMatch = detailsText.match(/(?:item weight|weight|shipping weight)[^0-9]*?(\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?|lbs?|pounds?|oz|ounces?)/i);
+    const weightMatch = detailsText.match(REGEX_WEIGHT);
     if (weightMatch) {
-      const val = parseFloat(weightMatch[1]);
-      const unit = weightMatch[2].toLowerCase();
-      if (unit.startsWith('kg') || unit.startsWith('kilo')) weightKg = val;
-      else if (unit.startsWith('g')) weightKg = val / 1000;
-      else if (unit.startsWith('lb') || unit.startsWith('pound')) weightKg = val * 0.453592;
-      else if (unit.startsWith('oz') || unit.startsWith('ounce')) weightKg = val * 0.0283495;
+      weightKg = parseWeightString(parseFloat(weightMatch[1]), weightMatch[2].toLowerCase());
     }
 
-    const commonMaterials = ['steel', 'aluminum', 'aluminium', 'plastic', 'cotton', 'wood', 'glass', 'leather', 'polyester', 'nylon', 'cardboard', 'paper', 'ceramic'];
-    for (const mat of commonMaterials) {
-      // Basic word boundary check
+    const materials = [];
+    for (const mat of COMMON_MATERIALS) {
       if (new RegExp('\\b' + mat + '\\b').test(detailsText)) {
         materials.push(mat);
       }
@@ -164,17 +202,12 @@
     return "Whoa, that's a heavy one! Peep my tip below 👀";
   }
 
-  function createCard(id, extraClass) {
-    const card = document.createElement('div');
-    card.id = id;
-    card.className = `ecosprout-widget ecosprout-card ${extraClass || ''}`.trim();
-    return card;
-  }
-
   let lastProductKey = '';
+
   async function renderProductCard() {
     const data = extractProductData();
     if (!data) return;
+
     const key = `${data.title}|${data.priceText}|${data.shippingText}`;
     if (key === lastProductKey) return;
     lastProductKey = key;
@@ -184,7 +217,6 @@
 
     const anchor = findAnchor();
 
-    // Show a loading state before awaiting the AI
     card.className = `ecosprout-widget ecosprout-card ecosprout-sev-medium${anchor ? '' : ' ecosprout-floating'}`;
     card.innerHTML = `
       <div class="ecosprout-card-head">
@@ -202,7 +234,6 @@
 
     const estimate = await CarbonEngine.estimateProduct(data);
 
-    // Safety check in case they navigated away while generating
     if (key !== lastProductKey) return;
 
     card.className = `ecosprout-widget ecosprout-card ecosprout-sev-${estimate.severity}${anchor ? '' : ' ecosprout-floating'}`;
@@ -232,14 +263,17 @@
 
   function scanFlightSignals() {
     const scope = document.querySelector('[role="main"], main') || document.body;
-    const text = scope.innerText.slice(0, 20000); // capped for performance
+    const text = scope.innerText.slice(0, MAX_FLIGHT_TEXT_LENGTH);
+
     const stopMatches = [...text.matchAll(/(\d+)\s*stop/gi)].map((m) => parseInt(m[1], 10));
     const hasNonstop = /nonstop|non-stop|direct flight/i.test(text);
     const stops = stopMatches.length ? Math.min(...stopMatches) : hasNonstop ? 0 : 1;
+
     let cabin = 'economy';
     if (/first class/i.test(text)) cabin = 'first';
     else if (/business class/i.test(text)) cabin = 'business';
     else if (/premium economy/i.test(text)) cabin = 'premium';
+
     return { stops, cabin };
   }
 
@@ -250,6 +284,7 @@
   }
 
   let flightInitialized = false;
+
   function renderFlightNudge() {
     const { stops, cabin } = scanFlightSignals();
     const { originCode, destCode } = tryExtractAirportCodes();
@@ -260,6 +295,7 @@
       panel = createCard('ecosprout-flight-panel', 'ecosprout-floating');
       document.body.appendChild(panel);
     }
+
     panel.innerHTML = `
       <div class="ecosprout-card-head">
         <span class="ecosprout-card-badge">✈️ Flight Footprint</span>
@@ -268,6 +304,7 @@
       <div class="ecosprout-card-suggestion">${estimate.message}</div>
       <button class="ecosprout-card-cta" type="button">I'll look at direct flights 🧭</button>
     `;
+
     panel.querySelector('.ecosprout-card-cta').addEventListener('click', (e) => {
       sendKarmaEvent(5, 'flight_direct_consideration', { stops });
       e.target.textContent = 'Good call! ✨';
@@ -287,19 +324,25 @@
   function scanCartItemNames() {
     const found = new Set();
     const priceLike = /[$₹€£]\s?\d/;
+
     document.querySelectorAll('[data-testid*="cart" i], [class*="cart" i], [id*="cart" i]').forEach((container) => {
       container.querySelectorAll('span, div, p, li').forEach((node) => {
         const t = node.textContent && node.textContent.trim();
-        if (t && t.length > 2 && t.length < 60 && /[a-zA-Z]/.test(t) && !priceLike.test(t)) found.add(t);
+        if (t && t.length > 2 && t.length < 60 && /[a-zA-Z]/.test(t) && !priceLike.test(t)) {
+          found.add(t);
+        }
       });
     });
-    return [...found].slice(0, 25);
+
+    return [...found].slice(0, FOOD_CART_MAX_ITEMS);
   }
 
   let lastFoodKey = '';
+
   function renderFoodNudge() {
     const items = scanCartItemNames();
     if (!items.length) return;
+
     const key = items.join('|');
     if (key === lastFoodKey) return;
     lastFoodKey = key;
@@ -310,7 +353,9 @@
       panel = createCard('ecosprout-food-panel', 'ecosprout-floating');
       document.body.appendChild(panel);
     }
+
     const tierEmoji = { green: '🌱', balanced: '⚖️', heavy: '🥩' }[estimate.tier];
+
     panel.innerHTML = `
       <div class="ecosprout-card-head">
         <span class="ecosprout-card-badge">${tierEmoji} Order Footprint</span>
@@ -319,6 +364,7 @@
       <div class="ecosprout-card-suggestion">${estimate.message}</div>
       ${estimate.tier !== 'green' ? '<button class="ecosprout-card-cta" type="button">Add something green 🥗</button>' : ''}
     `;
+
     const cta = panel.querySelector('.ecosprout-card-cta');
     if (cta) {
       cta.addEventListener('click', (e) => {
@@ -349,27 +395,20 @@
     }
   }
 
-  function debounce(fn, wait) {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
-  }
-
   chrome.storage.local.get('settings', (data) => {
     settings = { ecommerce: true, flight: true, food: true, petBubble: true, ...(data.settings || {}) };
 
     if (settings.petBubble) SproutPet.init();
     runDetection();
 
-    const debouncedRun = debounce(runDetection, 500);
+    const debouncedRun = debounce(runDetection, SPA_RELOAD_DELAY_MS);
     const observer = new MutationObserver((mutations) => {
       const relevant = mutations.some((m) => !isOwnNode(m.target) && (m.addedNodes.length || m.type === 'characterData'));
       if (relevant) debouncedRun();
     });
+
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
-    // SPA resilience: Amazon/Kayak/etc. often update price/results via
-    // client-side routing without a full reload — intercept history API
-    // changes so a fresh detection pass runs immediately after.
     ['pushState', 'replaceState'].forEach((fnName) => {
       const original = history[fnName];
       history[fnName] = function (...args) {
@@ -377,11 +416,12 @@
         lastProductKey = '';
         lastFoodKey = '';
         flightInitialized = false;
-        setTimeout(runDetection, 700);
+        setTimeout(runDetection, ROUTING_DELAY_MS);
         return result;
       };
     });
-    window.addEventListener('popstate', () => setTimeout(runDetection, 700));
+
+    window.addEventListener('popstate', () => setTimeout(runDetection, ROUTING_DELAY_MS));
 
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local' || !changes.settings) return;

@@ -41,9 +41,7 @@ const ECOSPROUT_TIPS = [
   "Local & seasonal produce usually skips the refrigerated long-haul flight your out-of-season fruit took. 🍓"
 ];
 
-// Rough, widely-used reference figures for the comparison equivalents shown
-// in the UI (e.g. "≈ 4 miles driven"). These are approximations meant for
-// relatable context, not certified accounting figures.
+
 const ECOSPROUT_REFERENCE = {
   KG_PER_MILE_DRIVEN: 0.404, // ~average passenger car, EPA-style figure
   KG_PER_PHONE_CHARGE: 0.0084, // ~one full smartphone charge

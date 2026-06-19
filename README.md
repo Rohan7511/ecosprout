@@ -4,6 +4,10 @@ A browser extension that turns carbon awareness into something you *feel* while 
 
 100% local: every estimate is computed in your browser and stored in `chrome.storage.local`. Nothing is ever sent to a server.
 
+EcoSprout was built to be accessible to ordinary users, not just sustainability enthusiasts.
+
+The entire setup takes less than 10 clicks. And you don't have to worry ever again.
+
 ---
 
 ## What's inside
