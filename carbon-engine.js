@@ -311,3 +311,4 @@ const CarbonEngine = (function () {
 
 if (typeof window !== 'undefined') window.CarbonEngine = CarbonEngine;
 if (typeof self !== 'undefined') self.CarbonEngine = CarbonEngine;
+if (typeof module !== 'undefined' && module.exports) module.exports = CarbonEngine;

@@ -28,7 +28,13 @@ The entire setup takes less than 10 clicks. And you don't have to worry ever aga
 5. Select the unzipped `ecosprout-extension` folder (the one containing `manifest.json`).
 6. EcoSprout should appear in your toolbar. Pin it for easy access (click the puzzle-piece icon → pin EcoSprout).
 
-That's it — no build step, no `npm install`. It's plain JavaScript, loaded directly by the browser.
+That's it — no build step required to run the extension. It's plain JavaScript, loaded directly by the browser.
+
+### For Developers: Running Tests
+If you want to contribute or verify the core logic, you can run the automated Jest test suite:
+1. Make sure you have [Node.js](https://nodejs.org/) installed.
+2. Run `npm install` in the project directory.
+3. Run `npm run test` to execute the unit tests.
 
 ## Try it
 

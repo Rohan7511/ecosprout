@@ -4,11 +4,12 @@ This document outlines the workflow and core test cases to ensure the EcoSprout 
 
 ## Workflow
 
-1. **Local Setup:** Load the unpacked extension in Chrome via `chrome://extensions/`.
-2. **DOM Inspection (Content Script):** Navigate to supported host pages (Amazon, DoorDash, Kayak) and verify that the `ecosprout-widget` DOM nodes are successfully injected without throwing cross-origin or script errors.
-3. **Engine Validation:** Verify `carbon-engine.js` estimates via the console by invoking `window.CarbonEngine.estimateProduct({title: 'test', priceText: '20'})` and confirming reasonable outputs.
-4. **State Management:** Open the extension popup, interact with the UI (e.g. settings toggles, name input), and ensure values persist across re-opening the popup.
-5. **Logging & Debugging:** Monitor the browser's developer tools console (for the active tab or the background service worker) to view `console.log` and `console.debug` lines. These logs are intentionally used for tracking state, verifying event lifecycles, and fixing errors during development.
+1. **Automated Unit Testing:** We use Jest to verify pure logic functions. Run `npm install` followed by `npm run test` to execute the suite in `tests/carbon-engine.test.js`.
+2. **Local Setup:** Load the unpacked extension in Chrome via `chrome://extensions/`.
+3. **DOM Inspection (Content Script):** Navigate to supported host pages (Amazon, DoorDash, Kayak) and verify that the `ecosprout-widget` DOM nodes are successfully injected without throwing cross-origin or script errors.
+4. **Engine Validation:** Verify `carbon-engine.js` estimates via the console by invoking `window.CarbonEngine.estimateProduct({title: 'test', priceText: '20'})` and confirming reasonable outputs.
+5. **State Management:** Open the extension popup, interact with the UI (e.g. settings toggles, name input), and ensure values persist across re-opening the popup.
+6. **Logging & Debugging:** Monitor the browser's developer tools console (for the active tab or the background service worker) to view `console.log` and `console.debug` lines. These logs are intentionally used for tracking state, verifying event lifecycles, and fixing errors during development.
 
 ## Core Test Cases
 

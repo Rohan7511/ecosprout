@@ -51,3 +51,12 @@ if (typeof self !== 'undefined') {
   self.ECOSPROUT_TIPS = ECOSPROUT_TIPS;
   self.ECOSPROUT_REFERENCE = ECOSPROUT_REFERENCE;
 }
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    ECOSPROUT_DEFAULT_SETTINGS,
+    ECOSPROUT_STAGES,
+    ECOSPROUT_ACHIEVEMENTS,
+    ECOSPROUT_TIPS,
+    ECOSPROUT_REFERENCE
+  };
+}

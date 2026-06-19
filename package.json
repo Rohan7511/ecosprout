@@ -1,0 +1,25 @@
+{
+  "name": "ecosprout-extension",
+  "version": "1.0.0",
+  "description": "A browser extension that turns carbon awareness into something you *feel* while you shop, fly, and order food — not something you have to remember to check. No dashboard, no separate app: a small companion (your \"Sprout\") lives in your toolbar and reacts in real time, right inside the pages you're already on.",
+  "main": "background.js",
+  "scripts": {
+    "test": "jest --env=jsdom"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rohan7511/ecosprout.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Rohan7511/ecosprout/issues"
+  },
+  "homepage": "https://github.com/Rohan7511/ecosprout#readme",
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1"
+  }
+}
